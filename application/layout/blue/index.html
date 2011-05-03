@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+	<head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta name="author" content="cameleon Internet Media" />
+        <meta name="publisher" content="cameleon Internet Media" />
+        <meta name="copyright" content="cameleon Internet Media" />
+        <meta name="keywords" content="MVC, Model, View, Controller, Vimerito, 2" />
+        <meta name="description" content="Vimerito 2 - Der nette Model-View-Controller für PHP" />
+        <meta http-equiv="content-language" content="de" />
+        <meta name="robots" content="INDEX, FOLLOW" />
+        <meta name="revisit-after" content="2 days" />
+		<title>Die Welt von Vimerito!</title>
+        <link rel="stylesheet" href="<?=self::$__layoutLink;?>style.css" type="text/css" />
+	</head>
+	<body>
+	   <div id="outer_wrap">
+    		<div id="wrapper">
+        		<div class="content">
+                    <div id="head"></div> 
+                    <div id="menu2">
+                        <div id="menu"></div>
+                    </div>    
+                    
+                    <br />
+                    <div id="content"></div>
+                    <div class="footer">
+                        cameleon Internet Media. 2011 - All rights reserved. Diese Seite wurde in <?=Vimerito::getApplicationBuildingTime();?> Sekunden erstellt.    Es gab <?=VDatabase::getDatabaseRequestsCount();?> Mysql-Abfragen.
+                    </div>    
+                </div>
+            </div>
+        </div>
+	</body>
+</html>

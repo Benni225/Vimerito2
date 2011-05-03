@@ -1,0 +1,150 @@
+**********************************************************************
+**********************************************************************
+Vimerito 2 v.0.3
+
+Versiondetails:
+**********************************************************************
+Version 0.3
+
+1. [changed] many, many bugs in the class VQuerybuilder have removed
+Puh! There were bugs in 
+- the where-clause
+- the set-clause
+- the value-clause
+- the insert-clause
+- the update-clause
+
+2. [new] cols-clause in the class VQuerybuilder
+For insert-querys the cols-clause created. This clause create only 
+brackets with columnnames.
+
+3. [changed] a big bug in the class VAccessRights has removed
+There was a bug while the authentication of the user.
+Now it should run in all cases. 
+
+4. [new] findAll in the ActivRecorder-class
+The method findAll will find all datasets of a table.
+
+5. [new] findLast added to the ActivRecorder
+
+6. [new] insertForm addad to the ActivRecorder
+
+7. [changed] the authenticationbug by running the application has 
+             removed
+             
+8. [changed] insert- and updatebug removed in the class VDatabase
+
+9. [changed] no warnings produced anymore by analysing the database
+             in VDatabase
+
+10. [changed] no warnings produced anymore by executing a query
+              in VDatabase
+              
+11. [new] routing of applications added to VRouter
+Now a website can subdivide into different applications. If you
+configure the array "applications" in applicationConfiguration.php
+at the way:
+$applications = array(
+        "nameOfApplication"     =>  "path/to/applicationdir"
+    )
+    
+you can route to the application in the url:
+www.yoursite.com/applicationame/controller/action.html
+
+12. [new] third parameter to Vimerito::createUrl added
+If you create a URL with this method now you can link to an 
+application.
+Vimerito::createUrl(array('controller', 'action', 'application'), array(parameter));
+
+
+
+
+ 
+ 
+**********************************************************************
+**********************************************************************
+Vimerito 2 v.0.2
+
+Versiondetails:
+**********************************************************************
+Version 0.2
+
+1. [changed] file and class conventions
+----------------------------------------------------------------------
+The conventions for contoller, models and form changed. It might be 
+more easier. 
+
+If you create a controller in file
+{applicationdir}/controllers/myStartSiteController.class.php
+Now, the controllername is only:
+myStartSite
+
+For example, the controller have to look like:
+
+class myStartSite extends VController{
+    //some code
+}
+
+For forms and models it is the same:
+{applicationdir}/forms/myLoginForm.class.php
+
+class myLogin extends VForm{
+    //some code
+}
+
+{applicationdir}/models/myTableModel.class.php
+
+class myTable extends VActiceRecorder{
+    //some code
+}
+
+2. [new] Eventhandling
+----------------------------------------------------------------------
+Eventhandling were added to Vimerito 2.
+The classname is VEvent and the class is placed in the folder
+{systemdir}/classes/VEvent.class.php
+
+The following methods were added:
+
+VEvent::add(String eventname, array callback)
+    - eventname is the name of the event you want add 
+    - callback is an array with the class an the method that have to 
+      call by triggering an event. 
+      array('class', 'method');
+    Every event can get a endless number of classes an methods
+
+VEvent::trigger(string eventname[, object controllerinstance]);
+    - eventname is the name of the event you want trigger
+    - controllerinstance (optional) is an instance of the controller 
+      that triggered the event  
+
+3. [changed] dirname for the controllerfolder
+----------------------------------------------------------------------
+The dirname for controller changed to "controllers"
+
+4. [changed] conventions for controllermethods
+----------------------------------------------------------------------
+A method in a controller that should be able to route with the url
+have to get a "Action" behind the methodname.
+Look at the follwing example:
+The url is:
+http://www.mysite.com/myController/methodname.html
+
+The belonging controller looks like:
+
+class myController extends VController{
+    public function myControllerInit(){
+        //some code
+    }
+
+    public function methodnameAction(){
+        //some code
+    }
+}
+ 
+
+
+
+
+
+

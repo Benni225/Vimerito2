@@ -1,0 +1,205 @@
+body {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body, html {
+	height: 100%;
+}
+
+div#outer_wrap {
+	width: 100%;
+	min-height: 100%;
+	position: relative;
+}
+/*
+div#wrapper {
+	width: 950px;
+	height: auto;
+	min-height: 400px;
+	margin: 0 auto;
+	position: relative;
+	padding: 0 0 400px 0; /* Höhe des Footers + evtl. Abstand 
+}      */
+
+div#wrapper {
+  position: absolute;
+  width: 768px;
+  left: 50%;
+  margin-left: -384px;  /* hier die Hälfte der Breite des Wrappers angeben */
+  background-color: white;
+  height: 95%;
+}
+
+div#head{
+    width: 256px;
+    height: 256px;
+    position: relative;
+    top: 20px;
+    left: 0px;
+    background-image: url(images/vimerito2_logo2.png);
+    float: left;
+    display: block;
+}      
+
+div#menu2{
+    width: auto;
+    height: 256px;
+    position: relative;
+    top: 195px;
+    float: right;
+    font-family: Tahoma;
+    font-size: 20px;
+    display: block;
+    color: #d9d9d9;
+}
+
+div#menu2 a{
+    font-family: Tahoma;
+    font-size: 20px;
+    color: #696969;
+    text-decoration: none;
+}
+
+div#menu2 a:hover{
+    font-family: Tahoma;
+    font-size: 20px;
+    color: #000000;
+    text-decoration: none;
+}  
+
+div#menu{
+    white-space: nowrap;    
+}
+
+div#menu ul{
+    white-space: nowrap;
+    list-style-type: none;
+
+}
+
+div#menu a{
+    white-space: nowrap;
+    font-size: 13px;
+    color: #005c76;
+}
+
+div#menu a:hover{
+    white-space: nowrap;
+    font-size: 13px;
+    color: #000000;
+}
+
+div#content{
+    margin-top: 256px;  
+    font-family: Tahoma;
+    font-size: 15px;
+    padding: 10px;
+    min-height: 500px;
+    height: auto;
+}
+
+div#content h1{
+    font-family: Tahoma;
+    font-size: 17px;   
+    font-weight: bold; 
+}
+
+.content {
+	width: 780px;
+	min-height: 500px;
+	height: auto;
+	padding: 0 0 0 0;
+	margin: 0 auto;
+}
+
+.footer{
+    border-width: 0px;
+    border-top-width: 1px;
+    color: #696969;
+    border-style: solid;
+    font-family: Tahoma;
+    font-size: 12px;
+    padding: 10px;
+}
+
+.nivoSlider {
+	position:relative;
+	min-height:200px;
+	min-width: 480px;
+	margin: 10px 30px 0px 30px;
+	-moz-box-shadow:0px 0px 10px #333;
+	-webkit-box-shadow:0px 0px 10px #333;
+	box-shadow:0px 0px 10px #333;
+}
+.nivoSlider img {
+	position:absolute;
+	top:0px;
+	left:0px;
+	display:none;
+}
+.nivoSlider a {
+	border:0;
+}
+
+.nivo-directionNav a {
+	display:block;
+	width:30px;
+	height:30px;
+	background:url(images/arrows.png) no-repeat;
+	text-indent:-9999px;
+	border:0;
+}
+a.nivo-nextNav {
+	background-position:-30px 0;
+	right:15px;
+}
+a.nivo-prevNav {
+	left:15px;
+}
+
+#slider .nivo-controlNav{
+	position:absolute;
+	left:47%;
+	bottom:-30px;
+}
+#slider .nivo-controlNav a{
+	display:block;
+	width:10px;
+	height:10px;
+	background:url(images/bullets.png) no-repeat;
+	text-indent:-9999px;
+	border:0;
+	margin-right:3px;
+	float:left;
+}
+#slider .nivo-controlNav a.active {
+	background-position:-10px 0;
+}
+
+#slider a {
+	display:block; /* IE Fix */
+}
+
+#slider {
+	margin-bottom:50px;
+}
+#slider .nivo-controlNav {
+	position:absolute;
+	left:42%;
+	bottom:-30px;
+}
+#slider .nivo-controlNav img {
+	display:inline;
+	position:relative;
+	margin-right:10px;
+	-moz-box-shadow:0px 0px 5px #333;
+	-webkit-box-shadow:0px 0px 5px #333;
+	box-shadow:0px 0px 5px #333;
+}
+#slider .nivo-controlNav a.active img {
+	-moz-box-shadow:0px 0px 5px #fff;
+	-webkit-box-shadow:0px 0px 5px #fff;
+	box-shadow:0px 0px 5px #fff;
+}

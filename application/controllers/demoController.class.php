@@ -10,10 +10,12 @@
                 'inhalt'   =>  '#content'
             ); 
             VLayout::load("blue/index.html", $blocks);  
-            $this->loadView("content", "startpage.php");    
-            $this->render("content", CacheToVar); 
-            
-            VLayout::insertIntoBlock('inhalt', "content");
+            $view = new VView;
+            $view->load("startpage.php");  
+             
+            $view->render(CacheToVar); 
+                        
+            VLayout::insertIntoBlock('inhalt', $view->cachedView);
             VLayout::renderLayout();
         }
     }

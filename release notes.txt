@@ -1,5 +1,92 @@
 **********************************************************************
 **********************************************************************
+Vimerito 2 v.0.4
+
+Versiondetails:
+**********************************************************************
+Version 0.4
+1. [new] Ressourcemanagement added
+From version 0.4 on, vews and layouts handled as ressources.
+ 
+2. [changed] VView.class.php completly rewritten
+VView is no static lib anymore. 
+Please use the following constructs:
+$view = new VView; or  $view = new VView("viewfile.php");
+
+//Viewloading
+$view->load("viewfile.php");
+//viewrendering
+$view->render(cachemode);
+//insert viewressource into the layout
+VLayout::insertIntoBlock('blockname', $view->cachedView);
+
+Now you also have to assign variables for views.
+
+$view->assignVar('name', 'value');
+
+or 
+
+$view->assignVar(array(
+    'name1' =>  'value1',
+    'name2' =>  'value2'
+));
+
+In a viewfile you have access to the variables at this way:
+<html>
+    <head></head>
+    <body>
+        <div>
+            <?=$this->name1;?>
+        </div>
+        <div>
+            <?=$this->name2;?>
+        </div>
+    </body>
+</html>
+
+3. [new]    VHtmlElement.class.php added
+Now, it is possible to create HTML-elements inside a controller 
+and you can insert them into a view or the layout, via a css-selector.
+
+$htmlE = new VHtmlElement;
+
+$htmlE->tag     = "div";
+$htmlE->name    = "name";
+$htmlE->id      = "id";
+$htmlE->src     = "src";
+$htmlE->parent  = "cssSelector";
+...
+
+For setting attributes you normaly should configure with css you
+can use the method addAttribute('attributeName', 'value');
+
+$htmlE->addAttribute('width', '150');
+
+You can remove such a attribute with removeAttribute('attributeName');
+
+$htmlE->removeAttribute('width');
+
+If you want to insert this element into a view or into a layout you
+the insert-method.
+$htmlE->insert($viewObject[, Append - Prepend - Replace]); or $htmlE->insert(Layout); 
+
+$viewObject is a object of the class VView. Layout is a constant.
+
+4. [new] VJavaScript added
+Now you can script JavaScript inside your controller and send it 
+to the layout or a view.
+
+$js = new VJavaScript;
+$js->setCode("
+    //JavaScript code
+");
+
+$js->insert($viewObject[, Append - Prepend - Replace]); or $js->insert(Layout); 
+
+6. Some bugs removed.
+
+**********************************************************************
+**********************************************************************
 Vimerito 2 v.0.3
 
 Versiondetails:
@@ -142,9 +229,3 @@ class myController extends VController{
     }
 }
  
-
-
-
-
-
-

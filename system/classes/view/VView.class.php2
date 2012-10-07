@@ -1,0 +1,138 @@
+<?
+    class VView extends VViewManipulation{
+        protected $_vars = array();
+        private static $__templates = array();
+        private static $__templateFilenames = array();
+        private static $__templateVars = array();
+        protected static $__templateCacheVar = array();
+        public $path = "";
+        
+        public function __construct(){
+            parent::__construct();
+        }
+        
+        public function __get($name){
+            return $__templateVars[$name];
+        }
+        
+        
+        public function loadView($name, $filename){
+            if($this->isModul()){
+                self::$__templates[$name] = new VViewRessource(Vimerito::getModulPath()."/views/".$filename);
+                self::$__templateFilenames[$name] = $filename; 
+            }else{
+                self::$__templates[$name] = new VViewRessource(Vimerito::getApplicationPath()."views/".$filename);
+                self::$__templateFilenames[$name] = $filename;  
+            }    
+        }  
+        
+        /** Alias for static method _renderAll;
+        *   @version 0.1
+        */ 
+        public function renderAll(){
+            self::_renderAll();
+        } 
+        
+        /** Render all the views, that registered. Caching is not possible.
+        * @version 0.1 
+        */ 
+        public static function _renderAll(){
+            foreach(self::$__templates as $__view){
+                if(file_exists($__view->getSource())){
+                    $__view->get();
+                }
+            }            
+        }
+        
+        
+        public function assignVar($name, $value){
+            self::$__templateVars[$name] = $value;    
+        }
+        /** Alias for the static method _render 
+        * @version 0.4 
+        * 
+        */ 
+        public function render($name, $caching = false, $cachingtime = 0){
+            return self::_render($name, $caching, $cachingtime);
+        }  
+        
+        /** Render a view, cache it to a variable or to a file and return in case 
+        *   of caching to a variable the result
+        *   In context $caching=CacheToFile $cachingtime = time that the file will cached
+        *   In context $caching=CacheToVar $cachingtime = true or false. On true the cached viewfile renderd after caching to var.
+        *  @version 0.4
+        *   includes now the ressource-concept
+        *  @return string
+        * 
+        */ 
+        public static function _render($name, $caching = false, $cachingtime = 0){
+            if($caching == CacheToFile and $cachingtime > 0){
+                if(file_exists(dirname(self::$__templates[$name]->getSource())."/cache/".self::$__templateFilenames[$name])){
+                    if(filemtime(dirname(self::$__templates[$name]->getSource())."/cache/".self::$__templateFilenames[$name]) + $cachingtime > time()){
+                        
+                        require dirname(self::$__templates[$name]->getSource())."/cache/".self::$__templateFilenames[$name]; 
+                        $__loaded = true;
+                    }
+                }
+                if($__loaded != true){
+        			ob_start();
+        			ob_implicit_flush(false);
+
+        			self::$__templates[$name]->get();
+        			
+        			$__cache = ob_get_clean();
+                    $path = dirname(self::$__templates[$name]->getSource())."/cache/";
+                    if(!file_exists($path)){
+                        mkdir($path, 660);
+                    }
+                    if(file_exists($path)){
+                        $handle = fopen($path.self::$__templateFilenames[$name]->getSource(), "w+");
+                        fwrite($handle, $__cache);
+                        fclose($handle);
+                    }
+                    echo $__cache;
+                }
+            }elseif($caching == CacheToVar){
+    			ob_start();
+    			ob_implicit_flush(false);
+    			
+        		self::$__templates[$name]->get();
+
+    			$__cache = ob_get_clean();
+                self::$__templateCacheVar[$name] = $__cache;
+                if($cachingtime == true){
+                    echo $__cache;
+                }
+                return $__cache; 
+            }else{
+            
+        		self::$__templates[$name]->get();
+        		
+            }
+        }
+        
+	    public function viewInView($view1, $cssselector, $view2){
+			$viewdata1 = self::$__templateCacheVar[$view1];
+			$viewdata2 = self::$__templateCacheVar[$view2];
+			
+			if($viewdata1 != '' and $viewdata2 != ''){
+				$view = new SimpleHtmlDom;
+				$view->load($viewdata1);
+				$view->find($cssselector);
+				foreach($view as $e){
+					$e->innertext($viewdata2);
+				}
+				$view->save();
+			}
+		}
+		
+
+		public static function viewExists($name){
+            if(array_key_exists($name, self::$__templates)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+?>

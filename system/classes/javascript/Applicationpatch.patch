@@ -1,0 +1,13 @@
+Index: VJavaScript.class.php
+===================================================================
+--- VJavaScript.class.php	(revision 19)
++++ VJavaScript.class.php	(working copy)
+@@ -21,7 +21,7 @@
+         
+         public function loadFromFile($__file){
+         	if(VRequest::isModulRequest() != TRUE){
+-            	$this->innerText = file_get_contents(__ApplicationPath."js/".$__file);
++            	$this->innerText = file_get_contents(Vimerito::getApplicationPath()."js/".$__file);
+         	}else{
+         		$this->innerText = file_get_contents(Vimerito::getModulPath()."js/".$__file);
+         	}

@@ -28,7 +28,8 @@
             $this->__nonBlockElements = array(
                 'image',
                 'hr',
-                'br'
+                'br',
+                'link'
             );
         }
         
@@ -76,11 +77,13 @@
             $this->__source = $source;
         }
         
-        public function setView($view){
-            if(VView::viewExists($name)){
-                $this->innerText = VView::_render($name, CacheToVar);
-                return true;
-            }else{
+        public function setView(&$view){
+            try{
+                $view->render(CacheToVar);
+                $this->innerText = $view->cachedView->get();
+                return true;                
+            }catch(Exception $e){
+                $e->getMessage();
                 return false;
             }
         }
@@ -88,12 +91,12 @@
         public function createHtml(){
             if(strtolower($this->tag) != "script"){
                 $this->html = '<'.$this->tag;
-                $this->html .= ' id=&quot;'.$this->id.'&quot;';
-                $this->html .= ' name=&quot;'.$this->name.'&quot;';
-                $this->html .= ' style=&quot;'.$this->style.'&quot;';
-                $this->html .= ' class=&quot;'.$this->class.'&quot;';
+                if($this->id)       $this->html .= ' id=&quot;'.$this->id.'&quot;';
+                if($this->name)     $this->html .= ' name=&quot;'.$this->name.'&quot;';
+                if($this->style)    $this->html .= ' style=&quot;'.$this->style.'&quot;';
+                if($this->class)    $this->html .= ' class=&quot;'.$this->class.'&quot;';
                 foreach($this->_attributes as $name=>$value){
-                    $this->html .= ' '.$name.'=&quot;'.$value.'&quot;';
+                    $this->html .= ' '.$name.'="'.$value.'"';
                 }
                 if(!in_array(strtolower($this->tag), $this->__nonBlockElements)){
                     $this->html .= '>';
@@ -104,9 +107,9 @@
                 }
             }else{
                 $this->html = '<'.$this->tag;  
-                $this->html .= '>';
+                $this->html .= '>'.chr(10);
                 $this->html .= $this->innerText;
-                $this->html .= '</'.$this->tag.'>'.chr(10);  
+                $this->html .= chr(10).'</'.$this->tag.'>'.chr(10);  
             }
             $this->_htmlRessource = new VHtmlRessource($this->html);
         }
@@ -123,18 +126,21 @@
             if($source == Null){
                 $source = $this->__source;    
             }
-            if($source == Layout){
+            if(!is_object($source) and $source == Layout){
                 if($this->parent != ""){
                     VLayout::addBlock(array(
                         $this->__hash.$this->__insertCounter    =>  $this->parent
                     ));
                     VLayout::insertIntoBlock($this->__hash.$this->__insertCounter, $this->_htmlRessource);
                 }
-            }elseif(get_class($source) == 'VView'){
+            }elseif(is_object($source) and get_class($source) == 'VView'){
+                if($this->parent == "head"){
+                    $this->parent = Null;
+                }
                 if($source->cachedView == Null){
-                    VViewManipulation::insert(&$source->_ressource, $this->_htmlRessource, $mode, $this->parent);
+                    VViewManipulation::insert($source->_ressource, $this->_htmlRessource, $mode, $this->parent);
                 }else
-                    VViewManipulation::insert(&$source->cachedView, $this->_htmlRessource, $mode, $this->parent);        
+                    VViewManipulation::insert($source->cachedView, $this->_htmlRessource, $mode, $this->parent);        
             }else{
                 throw new Exception('Invalid source given. Layout or a VView-object required!');
             }

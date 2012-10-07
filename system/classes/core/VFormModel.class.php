@@ -13,7 +13,8 @@
     class VFormModel extends VValidation{
         public $_vars = array();
         private $__classname = Null;
-        /*
+        /**
+        *   @example
         *   $Fields = array(
         *       'Field1' =>  array(
         *           'label'     =>  'Name',
@@ -44,7 +45,8 @@
         * 
         */ 
         public  $Fields = array();
-        /*
+        /**
+        *   @example
         *   $Form   =   array(
         *       'type'      =>  'data' / 'files',
         *       'header'    =>  'My Form',
@@ -60,7 +62,8 @@
         * 
         */ 
         public  $Form = array();  
-        /*
+        /**
+        *   @example
         *   $Validation = array(
         *       'Field1'    =>  array(
         *           'requierd'      =>  true,
@@ -91,6 +94,7 @@
         /** The magicmethod __get. Returns the value of a attribute stored 
         *   in the array $__vars.
         *   @param  $name   Name of the attribute.
+        *   @version 0.2
         *   @return mixed
         */
         public function __get($name){
@@ -163,7 +167,7 @@
                             value='";
                                 if($value != Null)
                                     echo $value;
-                                elseif($this->Fields[$name]['value'] != ""){
+                                elseif(isset($this->Fields[$name]['value'])){
                                     echo $this->Fields[$name]['value'];
                                 }
                             echo "' ";

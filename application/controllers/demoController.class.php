@@ -10,12 +10,28 @@
                 'inhalt'   =>  '#content'
             ); 
             VLayout::load("blue/index.html", $blocks);  
-            $view = new VView;
-            $view->load("startpage.php");  
+            $view = new VView("startpage.php");  
+            
+            $text = "Hallo ich bin eingef&uuml;gt!";
+            $text2 = "Ich auch!";
+            
+            $view->assignVar("var", $text);
+            $view->assignVar("var2", $text2);
              
-            $view->render(CacheToVar); 
-                        
-            VLayout::insertIntoBlock('inhalt', $view->cachedView);
+            $element = new VHtmlElement;
+            $element->tag = "div";
+            $element->innerText = "Ich bin ein Dynamischer Text!";
+            $element->parent = "#dyn";
+            $element->insert($view, Append);
+            
+            $js = new VJavaScript();
+            $js->setCode(
+                "//JavaScriptBlock"
+            );
+            
+            $view->sendToLayout('inhalt');
+            $js->sendToLayout();
+            
             VLayout::renderLayout();
         }
     }

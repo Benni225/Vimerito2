@@ -18,7 +18,8 @@
         public $_classname;
         private $_cells = array();
         private $_cellsType = array();
-        private $_cellsPrimaryKey = Null;      
+        private $_cellsPrimaryKey = Null;  
+        protected $_databaseConfiguration = array();    
         public $resultCount;  
     
         /** Is the constructor. It analyses the databasetable and stores the result.
@@ -45,11 +46,12 @@
             if(array_key_exists($name, $this->_cells)){
                 return $this->_cells[$name];
             }else{
-                return Null;
+                return Null;    
             }    
         }
         /** Set the current result to the first result of the recordset.
         *   @return BOOL If the method fails it return false. Otherwise true.
+        *   @version 0.1
         */ 
         public function first(){
             if(count($this->__recordset) > 0){
@@ -64,6 +66,7 @@
         }
         /** Set the current result to the next result of the recordset.
         *   @return BOOL If the method fails it return false. Otherwise true.
+        *   @version 0.1
         */        
         public function next(){
             if(count($this->__recordset) > 0){
@@ -81,6 +84,7 @@
         }
         /** Set the current result to the result before of the recordset.
         *   @return BOOL If the method fails it return false. Otherwise true.
+        *   @version 0.1
         */        
         public function prev(){
             if(count($this->__recordset) > 0){
@@ -99,6 +103,7 @@
         /**
         *   Set the current result to the last result of the recordset.
         *   @return BOOL If the method fails it return false. Otherwise true.
+        *   @version 0.1
         */        
         public function last(){
             if(count($this->__recordset) > 0){
@@ -117,6 +122,7 @@
         /**
         *   Checks if the current result is the last result of the recordset.
         *   @return bool If the current result is the last result it return true. Otherwise false.
+        *   @version 0.3
         */        
         public function isLast(){
             if(count($this->__recordset) > 0){
@@ -134,6 +140,7 @@
         *   @param  $value  The value of the primary key 
         *   @param  $column (optional) The columns that will be stored in the results.
         *   @return Mysql-Result 
+        *   @version 0.3
         */ 
         public function findByPK($value, $column = array()){
             $sql = VQuerybuilder::getQuery(
@@ -156,13 +163,16 @@
         *                           );
         *   @param  $column (optional) The columns that will be stored in the results.
         *   @return Mysql-Result
+        *   @version 0.3
         */        
-        public function findWhere($condition, $column = array()){
+        public function findWhere($condition, $column = array(), $order = array(), $limit = array()){
             $sql = VQuerybuilder::getQuery(
                 array(
                     'SELECT'    => $column,
                     'FROM'      => $this->_classname,
-                    'WHERE'     => $condition
+                    'WHERE'     => $condition,
+                    'ORDER'     => $order,
+                    'LIMIT'     => $limit
                 )
             );
             
@@ -175,11 +185,12 @@
         *   @param  $column (optional) The columns that will be stored in the results.
         *   @return Mysql-Result
         */        
-        public function findAll($column = array()){
+        public function findAll($column = array(), $order = array()){
             $sql = VQuerybuilder::getQuery(
                 array(
                     'SELECT'    => $column,
                     'FROM'      => $this->_classname,
+                    'ORDER'     => $order
                 )
             );
             $_return = $this->sendQuery($sql);
@@ -198,6 +209,7 @@
         *                           );
         *   
         *   @return Mysql-Result
+        *   @version 0.3
         */        
         public function findLast($column=array(), $limit=array(1), $order=Null, $where=Null){
             $sql = VQuerybuilder::getQuery(
@@ -223,6 +235,7 @@
         *                               array('column2', 'value2', '>')
         *                           );
         *   @return Mysql-Result
+        *   @version 0.3
         */        
         public function updateTable($values, $condition=array()){
             $sql = VQuerybuilder::getQuery(
@@ -238,13 +251,14 @@
         *   @param  $PKvalue    The value of the primary key. 
         *   @param  $values Is an array. The array-key represents the column and the value represents the value.
         *   @return Mysql-Result
+        *   @version 0.3
         */        
         public function updateTableByPK($PKvalue, $values){
             $sql = VQuerybuilder::getQuery(
                 array(
                     'UPDATE'    => $this->_classname,
                     'SET'       => $values,
-                    'WHERE'     => array(array($this->_cellsPrimaryKey, $value, '='))
+                    'WHERE'     => array(array($this->_cellsPrimaryKey, $PKvalue, '='))
                 )
             );
             return $this->sendQuery($sql);
@@ -258,6 +272,7 @@
         *                               array('column2', 'value2', '>')
         *                           );
         *   @return Mysql-Result
+        *   @version 0.3
         */        
         public function updateThis($condition = Null){
             if($condition == PK or $condition == Null){
@@ -276,14 +291,16 @@
         }
         /** Insert a dataset with data, that stored in the model.
         *   @return Mysql-Result
+        *   @version 0.3
         */        
         public function insertThis(){
             $sql = VQuerybuilder::getQuery(
                 array(
                     'INSERT'    => $this->_classname,
-                    'SET'       => $this->_cells
+                    'Cols'       => $this->_cells
                 )
             );
+            echo $sql;
             return $this->sendQuery($sql);            
         }
         /** Insert a dataset with data, that stored in the formmodel.
@@ -319,40 +336,97 @@
                 return false;
             }
         }
-        
+        /** Deletes a dataset by a given where-condition
+        *   @param $condition is an array or a string with a valid where-condition.
+        *   @retrun The SQL-Query
+        *   @version 0.4
+        */ 
+        public function deleteWhere($condition){
+            $sql = VQuerybuilder::getQuery(
+                array(
+                    "DELETE"    =>  $this->_classname,
+                    "WHERE"     =>  $condition
+                )
+            );
+            return $this->sendQuery($sql);
+        }
+        /** Update a dataset with the values of a from.
+        *   @param $Form is a pointer to a formmodel
+        *   @param $where is a string or an array with a valid where-condition. 
+        *   @param $exception is an array, that includes cols that shouldn't be updated.
+        *   @return If true, the method returns the SQL-Query. If not false.
+        *   @version 0.3
+        */
         public function updateForm(&$Form, $where, $exception = array()){
             $_setArray = array();
             $_valuesArray = "";
             if(is_object($Form)){
                 foreach($Form->Fields as $key=>$value){
                     if(!in_array($key, $exception) and key_exists($key, $this->_cells)){
-                        //$_setArray.="`".$key."`,";
                         $_setArray = array_merge($_setArray, array($key=>$Form->_vars[$key]));
-                        //echo $key."=".$Form->_vars[$key]."<br />";
                     }
                 }
-                /*$_setArray = substr($_setArray, 0, -1);
-                foreach($Form->Fields as $field=>$value){
-                   if(!in_array($field, $exception) and key_exists($field, $this->_cells)){
-                        $_valuesArray .= "'".$Form->_vars[$field]."',";
-                    }
-                }
-                $_valuesArray = substr($_valuesArray, 0, -1); */
-                //var_dump($_setArray);
                 $sql = VQuerybuilder::getQuery(array(
                             'UPDATE'    =>  $this->_classname,
                             'SET'       =>  $_setArray,
                             'WHERE'     =>  $where
                             )
                         );
-                //echo $sql;
                 return $this->sendQuery($sql);
             }else{
                 return false;
             }
         }
+        /** Sends a sql-query to the database.
+        * @param $sql The query for sending
+        * @param $addToRecordset On default 1. The result automaticly add to the recordset. If 0 not.
+        * @return Returns the mysql-result-ressource.
+        * @version 0.6
+        */ 
+        public function send($sql, $addToRecordset = 1){
+            $r = $this->sendQuery($sql, $addToRecordset);
+            $this->first();
+            return $r;
+        }
+        /** Searches in the recordset for a row where a specified col has a specified result 
+        * @param $col Name of the col
+        * @param $value The value that the col must have
+        * @return Returns an object
+        * @version 0.6
+        */        
+        public function getResultByValue($col, $value){
+            $__a[] = $this->__recordset;
+            foreach($__a as $set){
+                if(array_key_exists($col, $set)){
+                    if($set[$col] == $value){
+                        return Vimerito::arrayToObject($set);
+                    }
+                }
+            }
+            return Null;
+        }
+        /** Converts the recordset into the JSON-format and return the JSON-object.
+        * @return A JSON-object.
+        * @version 0.6
+        */ 
+        public function getJSON(){
+            $__a[] = $this->__recordset;
+            return htmlspecialchars(json_encode($__a), ENT_NOQUOTES);
+        }
+        
+        /**
+         * Renders the JSON-object.
+         * @return
+         * @version 0.6
+         */
+        public function returnJSON(){
+        	echo $this->getJSON();
+        }
+        
         /** Analyses the tablestructur, copying the structur into the model and chaches the result into a file.
         *   @param  $cacheThisTable  On TRUE the structure will cached into a file, otherwise nothing cached.
+        *   @version 0.1
+        *   @return Nothing.
         */        
         public function analyseDatabase($cacheThisTable = true){
             
@@ -361,7 +435,11 @@
                     require Vimerito::getApplicationPath()."/models/".$this->_classname.".cache.php";
                     $this->_cells = $__cached_cells;
                     $this->_cellsType = $__cached_cell_types;
-                    $this->_cellsPrimaryKey = $__cached_cells_primary_key;
+                    if(isset($__cached_cells_primary_ke)){
+                        $this->_cellsPrimaryKey = $__cached_cells_primary_key;
+                    }else{
+                        $this->_cellsPrimaryKey = Null;
+                    }    
                 }
             }
             if(empty($this->_cells) or empty($this->_cellsType)){

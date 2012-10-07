@@ -7,8 +7,12 @@
         }
         
         public function setSource($source){
-            $this->__filePath = $source;
-            $this->_source = file_get_contents($source);        
+            $this->_source = $source;    
+        }
+        
+        public function loadSource($source){
+            $this->__filePath = $source; 
+            $this->_source = file_get_contents($source);    
         }
         
         public function setHtmlSource($newSource){

@@ -1,7 +1,9 @@
 <?
     /** @file  Vimerito.class.php
     *   @author    cameleon Internet Media   
-    *   @date  21.14.2011
+    *   @date  21.4.2011
+    *   @version 0.6
+    *   	Moduls integrated
     *   @version 0.3
     *       The configurationarray: application added
     *       Vimerito::getApplicationArray() added
@@ -16,9 +18,9 @@
     * 
     * 
     */ 
-    error_reporting(E_WARNING | E_ERROR | E_PARSE);
+    mb_internal_encoding('UTF-8');
     defined("__VimeritoStartTime") or define("__VimeritoStartTime", microtime(true));
-    defined("__Version") or define("__Version", "0.03");
+    defined("__Version") or define("__Version", "0.05");
     defined("__Basedir") or define("__Basedir", dirname($_SERVER['DOCUMENT_ROOT'].$_SERVER['PHP_SELF'])."/");
     defined("__SystemPath") or define("__SystemPath", __Basedir."system/");
     defined("__ApplicationPath") or define("__ApplicationPath", __Basedir."application/");
@@ -26,6 +28,7 @@
     defined("CacheToFile") or define("CacheToFile", 1);
     defined("CacheToVar") or define("CacheToVar", 2);
 
+    defined("Layout") or define("Layout", 8);
     defined("LayoutAppend") or define("LayoutAppend", 1);
     defined("LayoutPrepend") or define("LayoutPrepend", 2);
 
@@ -34,6 +37,21 @@
     defined("PK") or define("PK", 4);
 
 	defined("CurrentApplication") or define("CurrentApplication", 5);
+	
+	defined("Prepend") or define("Prepend", 6);
+	defined("Append") or define("Append", 7);
+	defined("Replace") or define("Replace", 8);
+	
+	defined("useClassname") or define("useClassname", "VuseClassname");
+	defined("useMethodname") or define("useMethodname", "VuseMethodname");
+	defined("useMethodArgs") or define("useMethodArgs", "VuseMethodArgs");
+	
+	defined("Before") or define("Before", 0);
+	defined("After") or define("After", 1);
+	
+	defined("JavaScriptRequest") or define("JavaScriptRequest", 10);
+	defined("ViewRequest") or define("ViewRequest", 11);
+	defined("ModulRequest") or define("ModulRequest", 12);
 
 
     class Vimerito{
@@ -49,8 +67,12 @@
 		private static $__requestType = '';
 		private static $__applicationPath = '';
 		private static $__currentApplication = "";
+		private static $__javaScriptRequest;
+		private static $__debugMode;
 
 		private static $__moduls = array();
+		private static $__calledModul = "";
+		private static $__modulPath = "";
 
 		public static  $configuration = array();
 	    public static  $javaScriptLibraries = array();
@@ -58,7 +80,7 @@
 		public static  $router;
 
         public function __construct(){
-
+            self::setDebugMode(false);    
         }
 
         /** Saves the actual session
@@ -78,27 +100,26 @@
                 self::$__classArray = $__cachedClassArray;
                 self::$__systemController = $__cachedSystemController;
             }else{
-                Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
-                //throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
+                throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
             }
             if(file_exists(__ApplicationPath."configuration/applicationConfiguration.php")){
                 require __ApplicationPath."configuration/applicationConfiguration.php";
                 self::$configuration = $__cachedApplicationConfiguration;
             }else{
-                Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
+                throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
             }
             if(file_exists(__SystemPath."js/jslibraries.config.php")){
                 require __SystemPath."js/jslibraries.config.php";
                 self::$javaScriptLibraries = $__cachedJsLibraries;
             }else{
-                //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
+                throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
             }
 
             if(file_exists(__ApplicationPath."/configuration/javaScriptLibraries.conf.php")){
                 require __ApplicationPath."/configuration/javaScriptLibraries.conf.php";
                 self::$userJavaScriptLibraries = $__cachedJsLibraries;
             }else{
-                //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
+                throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
             }               
  
             VSession::createSession(); 
@@ -125,19 +146,21 @@
                 self::$__classArray = $__cachedClassArray;
                 self::$__systemController = $__cachedSystemController;
             }else{
-                Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
-                //throw new VException('Configurationfile "classArray.php"', 0, E_WARNING);
+                //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
+                throw new Exception('Configurationfile classArray.php', 0);
             }
             if(file_exists(self::getApplicationPath()."configuration/applicationConfiguration.php")){
                 require self::getApplicationPath()."configuration/applicationConfiguration.php";
                 self::$configuration = $__cachedApplicationConfiguration;
             }else{
-                Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
+            	throw new Exception('Configurationfile classArray.php: '.self::getApplicationPath(), 0);
+                //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
             }
             if(file_exists(__SystemPath."js/jslibraries.config.php")){
                 require __SystemPath."js/jslibraries.config.php";
                 self::$javaScriptLibraries = $__cachedJsLibraries;
             }else{
+            	throw new Exception('Configurationfile "classArray.php"', 0);
                 //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
             }
 
@@ -145,25 +168,52 @@
                 require self::getApplicationPath()."/configuration/javaScriptLibraries.conf.php";
                 self::$userJavaScriptLibraries = $__cachedJsLibraries;
             }else{
+            	throw new Exception('Configurationfile "classArray.php"', 0);
                 //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
             }      
         }
-        /** Runs the requested controller and method
-        *   
+        /** Runs the requested controller and method or the requested modul.
+        * 
         */ 
         public static function runApplication(){
-            
-            self::$__requestType = VRouter::calledRequestType();
-            self::$__calledController = VRouter::calledController();
-            self::$__calledMethod = VRouter::calledMethod();
-            
-            self::$__application[self::$__calledController]['obj'] = new self::$__calledController;
-            self::$__application[self::$__calledController]['obj']->run(self::$__calledMethod);
+            header('content-type: text/html; charset=iso-9951-8');
+            self::$__requestType = VRequest::calledRequestType();
+            if(self::$__requestType == ViewRequest){
+                self::$__calledController = "VGetView";
+                self::$__calledMethod = "";
+                
+                self::$__application[self::$__calledController]['obj'] = new self::$__calledController;
+                self::$__application[self::$__calledController]['obj']->run(self::$__calledMethod);
+            }elseif(self::$__requestType == ModulRequest){
+            	self::$__calledModul = VRouter::calledModul(); 
+            	self::$__calledController = VRouter::calledController();
+            	self::$__calledMethod = VRouter::calledMethod();
 
-            VSession::set("__lastController", self::$__calledController);
-            VSession::set("__lastMethod", self::$__calledMethod);
-            VSession::set("__lastParams", VRouter::getParamArray());
-            VSession::saveSession();     
+            	self::$__application[self::$__calledController]['obj'] = new self::$__calledModul;
+            	self::$__modulPath = self::$__application[self::$__calledController]['obj']->getModulPath();
+            	self::$__application[self::$__calledController]['obj']->run(self::$__calledController, self::$__calledMethod);
+            	
+            }else{
+                self::$__calledController = VRouter::calledController();
+                self::$__calledMethod = VRouter::calledMethod();
+    
+                self::$__application[self::$__calledController]['obj'] = new self::$__calledController;
+                self::$__application[self::$__calledController]['obj']->run(self::$__calledMethod);
+    
+                VSession::set("__lastController", self::$__calledController);
+                VSession::set("__lastMethod", self::$__calledMethod);
+                VSession::set("__lastParams", VRouter::getParamArray());
+                VSession::saveSession();                
+            }
+     
+        }
+        
+        /**
+         * Returns the scriptpath of the called modul.
+         * @return string The modulpath
+         */
+        public static function getModulPath(){
+        	return self::$__modulPath;
         }
         /** Sets wether the JavaScript-Library jQuery should integrated or not
         *   @param[in]  $mode   TRUE or FALSE 
@@ -191,12 +241,7 @@
             }
         }
 
-		/*
-		 * $alias = array(
-		*	'alias'	=>	'newname',
-		*	'classname'	=>	'classname',
-		*	'path'	=>	'path/to/class.class.php'
-		*/
+
 		/** Adds a class under an aliasname to an array. This array will utilized by autoloading classes. 
 		*   @param  $alias  Is an array. This array needs 3 keys with values. The keys are:
         *       @li 'alias' - the new name of the class
@@ -225,29 +270,62 @@
         */ 
         public static function autoload($classname){
             if(self::$__requestType == 'api'){
-            }elseif(file_exists(__ApplicationPath.'api/'.$classname.'Api'.'.'.self::$__userFileClassExtension.'.php')){
-                require_once(__ApplicationPath.'api/'.$classname.'Api'.'.'.self::$__userFileClassExtension.'.php');
+            }elseif(self::$__requestType == ModulRequest && file_exists(self::getApplicationPath().'modules/'.str_replace("Modul", "", $classname)."/".$classname."Module.class.php")){
+            	require_once(self::getApplicationPath().'modules/'.str_replace("Module", "", $classname)."/".$classname."Module.class.php");	
+            }elseif(str_replace('api', '', strtolower($classname)) != strtolower($classname)){
+                require_once(self::getApplicationPath().'api/'.$classname.'.'.self::$__userFileClassExtension.'.php');
             }elseif(Vimerito::__isSystemController($classname)){
                 require_once(self::$__systemController[$classname]);
             }elseif(isset(self::$__classArray[$classname])){
                 require_once(self::$__classArray[$classname]);
+            }elseif(str_replace('helper', '', strtolower($classname)) != strtolower($classname)){
+            	if(file_exists(self::getApplicationPath().'helpers/'.str_replace('_', '/', str_replace('helper', '', strtolower($classname))).'Helper'.'.'.self::$__userFileClassExtension.'.php')){
+                	require_once(self::getApplicationPath().'helpers/'.str_replace('_', '/', str_replace('helper', '', strtolower($classname))).'Helper'.'.'.self::$__userFileClassExtension.'.php');    
+            	}
+            	if(self::$__requestType == ModulRequest){
+            	    if(file_exists(self::getModulPath().'helpers/'.str_replace('_', '/', str_replace('helper', '', strtolower($classname))).'Helper'.'.'.self::$__userFileClassExtension.'.php')){
+                		require_once(self::getModulPath().'helpers/'.str_replace('_', '/', str_replace('helper', '', strtolower($classname))).'Helper'.'.'.self::$__userFileClassExtension.'.php');    
+            		}
+            	}
+            }elseif(str_replace('model', '', strtolower($classname)) != strtolower($classname)){
+            	if(file_exists(self::getApplicationPath().'models/'.str_replace('_', '/', str_replace('model', '', strtolower($classname))).'Model'.'.'.self::$__userFileClassExtension.'.php')){
+                	require_once(self::getApplicationPath().'models/'.str_replace('_', '/', str_replace('model', '', strtolower($classname))).'Model'.'.'.self::$__userFileClassExtension.'.php');
+            	}
+                if(self::$__requestType == ModulRequest){
+            	    if(file_exists(self::getModulPath().'models/'.str_replace('_', '/', str_replace('model', '', strtolower($classname))).'Model'.'.'.self::$__userFileClassExtension.'.php')){
+                		require_once(self::getModulPath().'models/'.str_replace('_', '/', str_replace('model', '', strtolower($classname))).'Model'.'.'.self::$__userFileClassExtension.'.php');    
+            		}
+            	}
             }elseif(isset(self::$__userClassArray[$classname])){
                 self::$__controllerPath[$classname] = dirname(self::$__userClassArray[$classname]);
                 require_once(self::$__userClassArray[$classname]);
 			}elseif(file_exists(self::getApplicationPath().'controllers/'.str_replace('_', '/', $classname).'Controller'.'.'.self::$__userFileClassExtension.'.php')){
                 self::$__controllerPath[$classname] = dirname(self::getApplicationPath().'controllers/'.str_replace('_', '/', $classname).'Controller'.'.'.self::$__userFileClassExtension.'.php');
                 require_once(self::getApplicationPath().'controllers/'.str_replace('_', '/', $classname).'Controller'.'.'.self::$__userFileClassExtension.'.php');
+			}elseif(VRequest::isModulRequest() && file_exists(self::getModulPath().'controllers/'.str_replace('_', '/', $classname).'Controller'.'.'.self::$__userFileClassExtension.'.php')){
+				require_once(self::getModulPath().'controllers/'.str_replace('_', '/', $classname).'Controller'.'.'.self::$__userFileClassExtension.'.php');
             }elseif(file_exists(self::getApplicationPath().'forms/'.str_replace('_', '/', $classname).'Form'.'.'.self::$__userFileClassExtension.'.php')){
                 require_once(self::getApplicationPath().'forms/'.str_replace('_', '/', $classname).'Form'.'.'.self::$__userFileClassExtension.'.php');
-            }elseif(file_exists(self::getApplicationPath().'models/'.str_replace('_', '/', $classname).'Model'.'.'.self::$__userFileClassExtension.'.php')){
-                require_once(self::getApplicationPath().'models/'.str_replace('_', '/', $classname).'Model'.'.'.self::$__userFileClassExtension.'.php');
+            }elseif(VRequest::isModulRequest() && file_exists(self::getModulPath().'forms/'.str_replace('_', '/', $classname).'Form'.'.'.self::$__userFileClassExtension.'.php')){
+            	require_once(self::getModulPath().'forms/'.str_replace('_', '/', $classname).'Form'.'.'.self::$__userFileClassExtension.'.php');
+            //}elseif(file_exists(self::getApplicationPath().'models/'.str_replace('_', '/', $classname).'Model'.'.'.self::$__userFileClassExtension.'.php')){
+            //    require_once(self::getApplicationPath().'models/'.str_replace('_', '/', $classname).'Model'.'.'.self::$__userFileClassExtension.'.php');
             }elseif(file_exists(self::getApplicationPath().'events/'.str_replace('_', '/', $classname).'Event'.'.'.self::$__userFileClassExtension.'.php')){
                 require_once(self::getApplicationPath().'events/'.str_replace('_', '/', $classname).'Event'.'.'.self::$__userFileClassExtension.'.php');
+            }elseif(VRequest::isModulRequest() && file_exists(self::getModulPath().'events/'.str_replace('_', '/', $classname).'Event'.'.'.self::$__userFileClassExtension.'.php')){
+            	require_once(self::getModulPath().'events/'.str_replace('_', '/', $classname).'Event'.'.'.self::$__userFileClassExtension.'.php');
             }elseif($classname != str_replace('_', '', $classname)){
-                $__path = self::getApplicationPath().str_replace('_', '/', $classname);
-                if(file_exists($path)){
-                    require_once($path);
-                }
+            	if(self::$__requestType == ModulRequest){
+            	    $__path = self::getModulPath().str_replace('_', '/', $classname);
+                	if(file_exists($path)){
+                    	require_once($path);
+                	}            		
+            	}else{
+	                $__path = self::getApplicationPath().str_replace('_', '/', $classname);
+	                if(file_exists($path)){
+	                    require_once($path);
+	                }
+            	}
             }else{
                 echo $classname;
                 //Vimerito::redirect(501, array('failure' => '20'), array('VFailure'));
@@ -264,7 +342,7 @@
                 return false;
             }
         }
-        /** Registers a additional autoloader. The old autoloader, use by Vimerito 2 will not be affected.
+        /** Registers an additional autoloader. The old autoloader, use by Vimerito 2 will not be affected.
         *   @param  $autoloader (mixed) Can be an array with classname and method or a functionname. 
         */ 
         public static function registerAutoloader($autoloader){
@@ -272,14 +350,15 @@
             spl_autoload_unregister($autoloader);
             spl_autoload_register(array('Vimerito','autoload'));
         }
-
-        public static function registerModul($modulname, $modulpath){
-            self::$__moduls[$modulname]['path'] = __ApplicationPath."moduls/".$modulpath;
+        
+        /**
+         * Unregister an additional autoloader.
+         * @param array, string $autoloader
+         */
+        public static function unregisterAutoloader($autoloader){
+        	spl_autoload_unregister($autoloader);
         }
 
-        public static function getModulPath($modulname){
-            return self::$__moduls[$modulname]['path'];
-        }
         /** Returns the realpath to the current controllerfile
         *   @param  $class  $classname of the controller
         *   @return String  Filepath of the controller
@@ -289,28 +368,43 @@
             return self::$__controllerPath[get_class($class)];
         }
 
+        /**
+         * Retruns if a specified object is a modul or not.
+         * @param object $object
+         */
         public static function isModul($object){
-            return false;
+        	if(method_exists($object, 'isModul')){
+        		if($object::isModel()){
+        			return true;
+        		}else{ 
+        			return false;
+        		}
+        	}else{
+        		return false;	
+        	}
         }
         /** Create a valid Vimerito 2 weblink
         *   @param  $param  Is an array that includes the controllername an the methodname without the suffix 'Action' or 'Init'. 
         *                   Also the constant CurrentApplication can be used, if a link to the actual controller should be builded. 
         *   @param  $gets   (Optional)  Includes parameter that sended via the url. The array needs in every case a key for the parametername and a value.    
         *   @return String  The link to a page.
+        *   @version 0.4.1  Applicationbug removed. The application-parameter was twice in an url.
         */ 
         public static function createUrl($param=Null, $gets=Null){
             if(self::$configuration['pageUrl'] != ""){
                 if(is_array($param)){
                     $url = self::$configuration['pageUrl'];
-                    if($param[2] != ''){
-                        $url .= "/".$param[2];    
-                    }elseif(self::$__currentApplication != "" OR self::$__currentApplication != Null){
-                        $url .= "/".self::$__currentApplication;
-                    }
-                    foreach($param as $p){
-                        if($p != ''){
-                            $url.="/".$p;
+                    if(count($param) < 3){
+                        if(self::$__currentApplication != "" OR self::$__currentApplication != Null){
+                            $url .= "/".self::$__currentApplication;
                         }
+                    }
+                    $__pCounter = 0;
+                    foreach($param as $p){
+                        if($p != '' and $__pCounter < count($param)){
+                            $url = $url."/".$p;
+                        }
+                        $__pCounter++;
                     }
                 }elseif(is_string($param)){
                     $url = self::$configuration['pageUrl'].'/'.(string)$param;
@@ -443,14 +537,39 @@
         }
         
         public static function getApplicationPath(){
-            if(self::$__applicationPath != '' or self::$__applicationPath != Null)
-                return str_replace(str_replace(__Basedir, "", __ApplicationPath), "", __ApplicationPath).self::$__applicationPath;
-            else
-                return str_replace(__Basedir, "", __ApplicationPath);       
+	    	if(self::$__applicationPath != '' or self::$__applicationPath != Null){
+	            return str_replace(str_replace(__Basedir, "", __ApplicationPath), "", __ApplicationPath).self::$__applicationPath;
+	       	}else{
+	            return str_replace(__Basedir, "", __ApplicationPath);
+	        }      
         }
         
         public static function getApplicationName(){
             return self::$__currentApplication;
+        }
+        
+        public static function createCode($codeLength){
+            srand((double)microtime()*1000000);
+            $created_code = '';
+            $zeichen="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+            for ($i=0;$i<$codeLength;$i++) {
+                $n=rand() % strlen($zeichen);
+                $created_code .=substr($zeichen, $n, 1);
+            }
+            return $created_code;
+        }
+        
+        public static function setDebugMode($mode){
+            self::$__debugMode = $mode;
+            if($mode == true){
+                error_reporting(E_WARNING | E_ERROR | E_PARSE | E_ALL);                
+            }else{
+                error_reporting(E_ERROR| E_PARSE);    
+            }
+        }
+        
+        public static function debugMode(){
+            return self::$__debugMode;
         }
 
     }

@@ -50,7 +50,10 @@
     	}
 		
 		public static function get($name){
-			return self::$sessionVal[$name];
+		    if(isset(self::$sessionVal[$name]))
+			    return self::$sessionVal[$name];
+		    else
+		        return Null;
 		}
 		
 		public static function set($name, $value = 0){

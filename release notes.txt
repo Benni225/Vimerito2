@@ -1,5 +1,32 @@
 **********************************************************************
 **********************************************************************
+Vimerito 2 v.0.5
+
+Versiondetails:
+**********************************************************************
+1. Many Bugs had removed from classes
+    - Vimerito
+    - VQueryBuilder (Where-Clause, Notices removed)
+    - VActiveRecorder (utf8-decoding removed)
+    - VEvent (Notice removed)
+    - VController (Notices removed)
+    - VDatabase (the nonsense of utf8-encoding removed)
+    - and many more
+    
+2. VActiveRecorder
+    - In method findAll the parameter "order by" added
+    - In method findLast the parameter "limit" and "order by" added
+    - In method findeWhere the parameter "limit" and "order by" added
+    
+3. VQueryBuilder
+    - limit and order by is implemented.
+    
+3. The eventhandling will now work.
+
+4. Vimerito2 is now more stable.
+    
+**********************************************************************
+**********************************************************************
 Vimerito 2 v.0.4
 
 Versiondetails:

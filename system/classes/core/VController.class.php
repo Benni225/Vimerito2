@@ -37,14 +37,14 @@
         public function __call($method, $parameters){
             try{
                 if(method_exists($this, $method)){
-                    Vimerito::checkMethodForEventsBefore($method, &$this);
+                    VEvent::triggerEventBefore($method, $this, $parameters);
                     $func = "\$_return = call_user_func(array(\$this, \$method)";
                     foreach($parameters as $p){
                         $func.= ", \$p";
                     }
                     $func.=");";
                     eval($func);
-                    Vimerito::checkMethodForEventsAfter($method, &$this);
+                    VEvent::triggerEventAfter($method, $this);
                     return $_return;
                 }elseif(array_key_exists($method, $this->_methods)){
                     if(is_array($this->_methods[$method])){
@@ -83,12 +83,16 @@
         * 
         */ 
         public function registerMethodAlias($alias, $callback){
-            if(is_string($callback) or is_array($callback)){
-                if(!method_exists($this, $alias)){
-                    $this->_methods[(string)$alias] = $callback;
-                }   
-            }else{
-                //Fehler ausgeben!
+            try{
+                if(is_string($callback) or is_array($callback)){
+                    if(!method_exists($this, $alias)){
+                        $this->_methods[(string)$alias] = $callback;
+                    }
+                }else{
+                    throw new VException('The methodname '.$alias.' exists already!');                    
+                }                
+            }catch(VException $e){
+                $e->showMessage;
             }  
         }
         
@@ -104,7 +108,15 @@
                     $method.="Action";
                 }    
                 if(VAccessRights::authenticateUser($method)){
+                    VEvent::triggerEventBefore(array(
+                        $this->__classname,
+                        $method
+                    ), $this);
                     $this->$method();
+                    VEvent::triggerEventAfter(array(
+                        $this->__classname,
+                        $method
+                    ), $this);
                 }else{
                     Vimerito::redirect(401, false, VAccessRights::getRedirectController());
                 }
@@ -113,18 +125,61 @@
                     $method = $this->_methods['default'];
                 else
                     $method.="Action";
-                $this->$method();             
+                VEvent::triggerEventBefore(array(
+                    $this->__classname,
+                    $method
+                ), $this);
+                $this->$method(); 
+                VEvent::triggerEventAfter(array(
+                    $this->__classname,
+                    $method
+                ), $this);            
             }    
         }
         /** Returns the filepath to the controllerfile.
         *   @return String  The filepath to the controllerfile. 
+        *   @version 0.3
         */ 
         public function getApplicationPath(){
-            return Vimerito::getApplicationPath($this);
+            return Vimerito::getApplicationPath();
+        }
+      
+        
+        /** Adds a new event for the actual class. It is triggerd before an event.
+        *   @param  $method is the trigger event
+        *           $callback is triggerd by the event. array("classname", "method") or array("static:classname", "method")
+        *   @version 0.5
+        * 
+        */ 
+        public function addEventBefore($method, $callback){
+            VEvent::add(
+                Before,
+                array(
+                    $this->__classname,
+                    $method
+                ),
+                $callback
+            );    
         }
         
-        public function isModul(){
-            return Vimerito::isModul($this);
+        /** Adds a new event for the actual class. It is triggerd after an event.
+        *   @param  $method is the trigger event
+        *           $callback is triggerd by the event. array("classname", "method") or array("static:classname", "method")
+        *   @version 0.5
+        */
+        public function addEventAfter($method, $callback){
+            VEvent::add(
+                After,
+                array(
+                    $this->__classname,
+                    $method
+                ),
+                $callback
+            );
+        }
+        
+        public static function isModul(){
+        	return false;
         }
         
     }

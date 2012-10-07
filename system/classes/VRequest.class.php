@@ -1,32 +1,51 @@
 <? 
     class VRequest{
-        private $__classname;
-        protected $_methods = array();
-        protected $_returnType = string();
+        private static $__javaScriptRequest;
+        private static $__viewRequest;
+        private static $__modulRequest;
+        private static $__requestedModul;
+        
+        protected $_returnType = "";
+        
         public function __construct(){
-            $this->__classname = get_class($this);
-            $this->_methods['default'] = $this->__classname."Init";            
+            self::$__javaScriptRequest = false;
+            self::$__viewRequest = false;
+            self::$__modulRequest = false;
         }
         
-        //Todo: proof of method exists
-        public function run($method){
-            if(Vimerito::$configuration['automaticAuthentication'] == true){
-                if(VAccessRights::authenticateUser()){
-                    if(!isset($method) or $method == '')
-                        $method = $this->_methods['default'];
-                    else
-                        $method.="Action";
-                    $this->$method();
-                }else{
-                    Vimerito::redirect(401, false, VAccessRights::getRedirectController());
-                }
-            }else{
-                if(!isset($method) or $method == '')
-                    $method = $this->_methods['default'];
-                else
-                    $method.="Action";
-                $this->$method();
+        public static function enableJavaScriptRequest(){
+            self::$__javaScriptRequest = true;
+        }
+        
+        public static function enableViewRequest(){
+            self::$__viewRequest = true;
+        }
+        
+        public static function isJavaScriptRequest(){
+            return self::$__javaScriptRequest;
+        }
+        
+        public static function calledRequestType(){
+            if(self::$__javaScriptRequest == true){
+                return JavaScriptRequest;
+            }elseif(self::$__viewRequest == true){
+                return ViewRequest;
+            }elseif(self::$__modulRequest == true){
+            	return ModulRequest;
             }
         }
+
+        public static function enableModulRequest(){
+        	self::$__modulRequest = true;
+        } 
+        
+        public static function isModulRequest(){
+        	return self::$__modulRequest;
+        }
+        
+        public static function requestedModul(){
+        	return self::$__requestedModul;
+        }
+        
     }
 ?>

@@ -8,14 +8,14 @@
             
         }
         
-        public static function insert($targetRessource, $sourceRessource, $mode = Append, $cssSelector = ""){
-            if($cssSelector == ""){
+        public static function insert(&$targetRessource, &$sourceRessource, $mode = Append, $cssSelector = Null){
+            if($cssSelector == Null){
                 if($mode == Append){
-                    $targetRessource->setHtmlSource($targetRessource->get().$sourceRessource->get());
+                    $targetRessource->setSource($targetRessource->get()."\n".$sourceRessource->get());
                 }elseif($mode == Prepend){
-                    $targetRessource->setHtmlSource($sourceRessource->get().$targetRessource->get());
+                    $targetRessource->setSource($sourceRessource->get()."\n".$targetRessource->get());
                 }elseif($mode == Replace){
-                    $targetRessource->setHtmlSource($sourceRessource->get());    
+                    $targetRessource->setSource($sourceRessource->get());    
                 }else{
                     throw new Exception('Invalid mode given!');
                 }        
@@ -34,7 +34,7 @@
                         throw new Exception('Invalid mode given!');
                     }
     			}
-                $targetRessource->setHtmlSource($Dom->save());                
+                $targetRessource->setSource($Dom->save());                
             }            
         }
     }

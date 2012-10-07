@@ -15,6 +15,7 @@
             'where',
             'values',
             'set',
+            //'count'
             'cols');
             
         private static $sqlQuery = "";
@@ -44,6 +45,7 @@
                     call_user_func($function, $value);
                 }   
             }
+            //echo self::$sqlQuery.';';
             return self::$sqlQuery.';';
         }
         
@@ -59,6 +61,7 @@
             }
             self::$sqlQuery .= $sqlReturn;
         }
+        
         //@ PARAM String condition
         private static function buildDelete($condition){
             self::$sqlQuery = "DELETE ";
@@ -79,44 +82,56 @@
         }
         
         private static function buildOrder($condition){
-            if(is_array($condition) and !empty($condition)){
-                self::$sqlQuery .= " ORDER BY ";
-                foreach($condition as $row=>$mode){
-                    if($mode == "" or $mode == Null){
-                        $mode = "DESC";
+            if($condition != Null and !empty($condition)){
+                if(is_array($condition)){
+                    self::$sqlQuery .= " ORDER BY ";
+                    foreach($condition as $row=>$mode){
+                        if($mode == "" or $mode == Null){
+                            $mode = "DESC";
+                        }
+                        self::$sqlQuery.= "`".$row."` ".$mode.",";
                     }
-                    self::$sqlQuery.= "`".$row."` ".$mode.",";    
+                    self::$sqlQuery = substr(self::$sqlQuery, 0, -1)." ";
+                }elseif($condition != Null){
+                    self::$sqlQuery.= $condition." ";
                 }
-                self::$sqlQuery = substr(self::$sqlQuery, 0, -1)." ";
-            }else{
-                self::$sqlQuery.= $condition." ";    
             }
         }
         
         private static function buildLimit($condition){
             if(is_array($condition) and !empty($condition)){
-                self::$sqlQuery .= " Limit ";  
+                self::$sqlQuery .= " LIMIT ";  
                 foreach($condition as $number){                
                     self::$sqlQuery.= $number.",";
                 } 
-                self::$sqlQuery = substr(self::$sqlQuery, 0, -1)." ";                     
+                self::$sqlQuery = substr(self::$sqlQuery, 0, -1)." ";                         
             }       
         }
-        
+        /**
+        *   @version 0.6 Chainingbug removed. 
+        */ 
         private static function buildWhere($condition){
+            $counter = 0;
             if(is_array($condition) and !empty($condition)){
                 self::$sqlQuery.=" WHERE";
                 if(is_array($condition[0])){
                     foreach($condition as $value){
                         $counter++;
-                        if($value[2] == "" OR $value[2] == Null)
-                                $value[2] = "=";
-                        if($value[3] == "" OR $value[3] == Null)
-                                $value[3] = " AND";
-                        $value[3] = strtoupper($value[3]);
-                        if($counter > 1)
-                            self::$sqlQuery.= $value[3];
+                        if(!isset($value[2])){
+                            $value[2] = "=";
+                        }
+                        if(!isset($value[3]) AND $counter < count($condition)){
+                            $value[3] = " AND";
+                        }
+                        if(isset($value[3])){
+                            $value[3] = strtoupper($value[3]);
+                        }
+                        /*if($counter > 1)
+                            self::$sqlQuery.= $value[3];*/
                         self::$sqlQuery.= " `".$value[0]."`".$value[2]."'".$value[1]."' ";
+                        if(isset($value[3])){
+                            self::$sqlQuery.= $value[3]." ";
+                        }
                     }
                 }else{
                     if($condition[2] == "" OR $condition[2] == Null)
@@ -126,7 +141,7 @@
                     $condition[3] = strtoupper($condition[3]);
                     if($counter > 1)
                         self::$sqlQuery.= $condition[3];
-                    self::$sqlQuery.= " ".$condition[0].$condition[2]."'".$condition[1]."' ";                    
+                    self::$sqlQuery.= " `".$condition[0]."`".$condition[2]."'".$condition[1]."' ";                    
                 }
                 self::$sqlQuery = substr(self::$sqlQuery, 0, -1)." ";
             }elseif(is_string($condition)){
@@ -151,6 +166,7 @@
         
         private static function buildSet($condition){
             $noarray = 0;
+            $counter = 0;
             if(is_array($condition)){
                 self::$sqlQuery.=" SET  ";
                 //if(is_array($condition[0])){

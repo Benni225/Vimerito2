@@ -33,7 +33,7 @@
 	    /** Loads the configurationfile {applicationpath}/accessConfiguration.php 
 	    *   
 	    */		
-		public function loadConfiguration(){
+		public static function loadConfiguration(){
     	    if(file_exists(Vimerito::getApplicationPath()."configuration/accessConfiguration.php")){
         		require(Vimerito::getApplicationPath()."configuration/accessConfiguration.php");
         		self::$__accessKeys = $__cachedAccessKeys;

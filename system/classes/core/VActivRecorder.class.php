@@ -413,7 +413,25 @@
             $__a[] = $this->__recordset;
             return json_encode($__a, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
         }
-        
+
+        /**
+         * Jumps to the position in the recordset, where a cell has the given value.
+         * @param  string $cell The refernce-cell
+         * @param  string $value The search-value.
+         * @version 0.6.1
+         */
+        public function findInRecordset($cell, $value){
+        	$this->first();
+        	for($_i = 0; $_i < $this->resultCount; $_i++){
+        		if($this->$cell == $value){
+        			return $_i;
+        		}
+        		if($this->$cell != $value AND $this->isLast()){
+        			return Null;
+        		}
+        		$this->next();
+        	}
+        }
         /**
          * Renders the JSON-object.
          * @return

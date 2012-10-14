@@ -1,4 +1,7 @@
 <? 
+/**
+ * 
+ */ 
     class VJavaScript extends VHtmlElement{
         public $code;
         

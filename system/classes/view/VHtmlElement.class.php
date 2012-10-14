@@ -134,9 +134,9 @@
                     VLayout::insertIntoBlock($this->__hash.$this->__insertCounter, $this->_htmlRessource);
                 }
             }elseif(is_object($source) and get_class($source) == 'VView'){
-                if($this->parent == "head"){
+                /*if($this->parent == "head"){
                     $this->parent = Null;
-                }
+                }*/
                 if($source->cachedView == Null){
                     VViewManipulation::insert($source->_ressource, $this->_htmlRessource, $mode, $this->parent);
                 }else
@@ -144,6 +144,10 @@
             }else{
                 throw new Exception('Invalid source given. Layout or a VView-object required!');
             }
+        }
+        
+        public function returnRessource(){
+        	return $this->_htmlRessource;
         }
     }
 ?>

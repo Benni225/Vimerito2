@@ -411,7 +411,7 @@
         */ 
         public function getJSON(){
             $__a[] = $this->__recordset;
-            return htmlspecialchars(json_encode($__a), ENT_NOQUOTES);
+            return json_encode($__a, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
         }
         
         /**

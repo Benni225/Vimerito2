@@ -22,7 +22,9 @@
     $__cachedClassArray['VHtmlElement']     	=   __SystemPath."/classes/view/VHtmlElement.class.php";
     $__cachedClassArray['VRessource']       	=   __SystemPath."/classes/core/VRessource.class.php";
     $__cachedClassArray['VViewRessource']   	=   __SystemPath."/classes/ressource/VViewRessource.class.php";
+    $__cachedClassArray['VJavaScriptRessource']   	=   __SystemPath."/classes/ressource/VJavaScriptRessource.class.php";
     $__cachedClassArray['VCachedViewRessource'] =   __SystemPath."/classes/ressource/VCachedViewRessource.class.php";
+    $__cachedClassArray['VCachedJavaScriptRessource'] =   __SystemPath."/classes/ressource/VCachedJavaScriptRessource.class.php";
     $__cachedClassArray['VHtmlRessource']   	=   __SystemPath."/classes/ressource/VHtmlRessource.class.php";
     $__cachedClassArray['VRequest']   			=   __SystemPath."/classes/VRequest.class.php";
     $__cachedClassArray['VDate']   				=   __SystemPath."/classes/helpers/VDate.class.php";

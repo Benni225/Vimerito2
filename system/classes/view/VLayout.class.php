@@ -123,22 +123,33 @@
         }
         
         public static function insertIntoBlockC($blockname, $action = LayoutAppend){
-            if(!VRequest::isJavaScriptRequest()){
-                if(self::$__layoutBlocks[$blockname] != ""){
-                    $Dom = new SimpleHtmlDom;
-    				$Dom->load(self::$__layoutSource);
-    				$elements = $Dom->find(self::$__layoutBlocks[$blockname]);
-                    foreach($elements as $e){
-    					if($action == LayoutPrepend)
-    						$e->innertext = self::$__layoutBlockInsert[$blockname]->get()."\n".$e->innertext;
-    					elseif($action == LayoutAppend)
-    						$e->innertext .= "\n".self::$__layoutBlockInsert[$blockname]->get();
-    					else
-    						$e->innertext = self::$__layoutBlockInsert[$blockname]->get();
-    				}
-    				self::$__layoutSource = $Dom->save();      
-    			}
-			}
+        
+	            if(!VRequest::isJavaScriptRequest()){
+	                if(self::$__layoutBlocks[$blockname] != ""){
+	                    $Dom = new SimpleHtmlDom;
+	    				$Dom->load(self::$__layoutSource);
+	    				$elements = $Dom->find(self::$__layoutBlocks[$blockname]);
+	                    foreach($elements as $e){
+	    					if($action == LayoutPrepend)
+	    						$e->innertext = self::$__layoutBlockInsert[$blockname]->get()."\n".$e->innertext;
+	    					elseif($action == LayoutAppend)
+	    						$e->innertext .= "\n".self::$__layoutBlockInsert[$blockname]->get();
+	    					else
+	    						$e->innertext = self::$__layoutBlockInsert[$blockname]->get();
+	    				}
+	    				self::$__layoutSource = $Dom->save();      
+	    			}
+
+        	/*}else{
+        		echo self::$__layoutBlockInsert[$blockname]->get();
+	            $Dom = new SimpleHtmlDom;
+	    		$Dom->load(self::$__layoutSource);
+	    		$elements = $Dom->find("head");
+        		foreach($elements as $e){
+	    			$e->innertext .= PHP_EOL.self::$__layoutBlockInsert[$blockname]->get();
+	    		}	    			       		
+        	}*/
+	            }
         }  
 		
 		public static function renderLayout(){

@@ -29,6 +29,7 @@
 		* 
 		* @version 0.4 Bug removed
 		* @version 0.6 Modulrequest integrated. 
+		* @version 0.6 Also GET-Parameters saved to self::$__routerParams and all parameters copied to $_GET
 		*/		
 		public static function route(){	
 			VEvent::triggerEventBefore("route", new VRouter());
@@ -65,8 +66,15 @@
                     self::$__calledRequestTyp = $parama[$parameterCounter];    
                 }	
 		    }
-            $_GET = self::$__routerParams;		
-            
+		    $__gets = explode("?", $_SERVER['REQUEST_URI']);
+		    if(count($__gets) > 0 AND key_exists("1", $__gets)){
+			    $get = explode("&", $__gets[1]);
+			    foreach($get as $key=>$value){
+			    	$__get = explode("=", $value);
+			    	
+			    	self::$__routerParams[$__get[0]] = $__get[1]; 
+			    }		
+		    }
             VEvent::triggerEventAfter("route", new VRouter());
 		}
 		/** Returns the called Controller-Class

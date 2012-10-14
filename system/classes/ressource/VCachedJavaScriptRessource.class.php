@@ -1,6 +1,7 @@
 <? 
-    class VCachedViewRessource extends VRessource{
+    class VCachedJavaScriptRessource extends VRessource{
         public $name;
+
         public function __construct($source = array()){
             $this->setSource($source['source']);
             $this->name = $source['name'];   
@@ -17,6 +18,6 @@
         public function get(){
             return $this->_source;
         }
-    	
+        
     }
 ?>

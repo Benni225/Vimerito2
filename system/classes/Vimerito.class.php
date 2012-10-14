@@ -550,11 +550,11 @@
         
         public static function createCode($codeLength){
             srand((double)microtime()*1000000);
-            $created_code = '';
+            $createdCode = '';
             $zeichen="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
             for ($i=0;$i<$codeLength;$i++) {
                 $n=rand() % strlen($zeichen);
-                $created_code .=substr($zeichen, $n, 1);
+                $createdCode .=substr($zeichen, $n, 1);
             }
             return $created_code;
         }

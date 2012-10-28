@@ -102,7 +102,7 @@
                 return $this->cachedView;
             }else{
 
-        		eval('?>'.$this->_ressource->get().'<? ');
+        		eval('?>'.utf8_decode($this->_ressource->get()).'<? ');
 
             }            
         }

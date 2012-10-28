@@ -556,7 +556,7 @@
                 $n=rand() % strlen($zeichen);
                 $createdCode .=substr($zeichen, $n, 1);
             }
-            return $created_code;
+            return $createdCode;
         }
         
         public static function setDebugMode($mode){

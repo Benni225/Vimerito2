@@ -38,7 +38,8 @@
         public function insertTo(&$source, $mode = Append, $cssSelector = Null){
                 if($source->cachedView == Null){
                     if($this->cachedView == Null){
-                        VViewManipulation::insert($source->_ressource, $this->_ressource, $mode, $cssSelector);
+                    	$this->render(CacheToVar, false);
+                        VViewManipulation::insert($source->_ressource, $this->cachedView, $mode, $cssSelector);
                     }else{
                         VViewManipulation::insert($source->_ressource, $this->cachedView, $mode, $cssSelector);
                     }

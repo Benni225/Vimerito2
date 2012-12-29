@@ -4,6 +4,7 @@
         private static $__viewRequest;
         private static $__modulRequest;
         private static $__requestedModul;
+        private static $__development;
         
         protected $_returnType = "";
         
@@ -11,6 +12,7 @@
             self::$__javaScriptRequest = false;
             self::$__viewRequest = false;
             self::$__modulRequest = false;
+            self::$__development = false;
         }
         
         public static function enableJavaScriptRequest(){
@@ -25,6 +27,10 @@
             return self::$__javaScriptRequest;
         }
         
+        public static function isDevelopmentRequest(){
+        	return self::$__development;
+        }
+        
         public static function calledRequestType(){
             if(self::$__javaScriptRequest == true){
                 return JavaScriptRequest;
@@ -32,6 +38,8 @@
                 return ViewRequest;
             }elseif(self::$__modulRequest == true){
             	return ModulRequest;
+            }elseif(self::$__development == true){
+            	return DevelopmentRequest;
             }
         }
 
@@ -45,6 +53,10 @@
         
         public static function requestedModul(){
         	return self::$__requestedModul;
+        }
+        
+        public static function enableDevelopmentRequest(){
+        	self::$__development = true;	
         }
         
     }

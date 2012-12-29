@@ -15,6 +15,10 @@
 		private static $__calledRequestTyp = Null;
 		private static $__referer = Null;
 		
+		const developmentRouteControllerOnDefault = "applications";
+		const developmentRouteMethodOnDefault = "applicationsInit";
+		const development = "_development";
+		
 		public function __construct(){
 		    //self::$__calledController = Vimerito::$configuration['routeControllerOnDefault'];
 		    //self::$__calledMethod = Vimerito::$configuration['routeMethodOnDefault'];
@@ -56,6 +60,9 @@
                     VRequest::enableJavaScriptRequest();
                 }elseif(strtolower($parama[$parameterCounter]) == "getview"){
                     VRequest::enableViewRequest();
+                }elseif(strtolower($parama[$parameterCounter]) == self::development){
+                    VRequest::enableDevelopmentRequest();
+                    Vimerito::setDevelopmentApplicationPath();
 			    }elseif(!empty($appArray) AND array_key_exists($parama[$parameterCounter], $appArray) AND Vimerito::getApplicationName() == ''){
                     Vimerito::setApplicationPath($parama[$parameterCounter]);
 				}elseif(self::$__calledController == Null){
@@ -82,7 +89,11 @@
 		*/ 
 		public static function calledController(){
             if(self::$__calledController == Null){
-                self::$__calledController = Vimerito::$configuration['routeControllerOnDefault'];
+            	if(VRequest::calledRequestType() != DevelopmentRequest){
+                	self::$__calledController = Vimerito::$configuration['routeControllerOnDefault'];
+            	}else{ 
+                	self::$__calledController = self::developmentRouteControllerOnDefault;
+            	}
             }
             return self::$__calledController;
         }

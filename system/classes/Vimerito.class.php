@@ -52,6 +52,7 @@
 	defined("JavaScriptRequest") or define("JavaScriptRequest", 10);
 	defined("ViewRequest") or define("ViewRequest", 11);
 	defined("ModulRequest") or define("ModulRequest", 12);
+	defined("DevelopmentRequest") or define("DevelopmentRequest", 13);
 
 
     class Vimerito{
@@ -149,11 +150,11 @@
                 //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
                 throw new Exception('Configurationfile classArray.php', 0);
             }
-            if(file_exists(self::getApplicationPath()."configuration/applicationConfiguration.php")){
-                require self::getApplicationPath()."configuration/applicationConfiguration.php";
+            if(file_exists(self::getApplicationPath(true)."configuration/applicationConfiguration.php")){                
+            	require self::getApplicationPath(true)."configuration/applicationConfiguration.php";
                 self::$configuration = $__cachedApplicationConfiguration;
             }else{
-            	throw new Exception('Configurationfile classArray.php: '.self::getApplicationPath(), 0);
+            	throw new Exception('Configurationfile classArray.php: '.self::getApplicationPath(true), 0);
                 //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
             }
             if(file_exists(__SystemPath."js/jslibraries.config.php")){
@@ -164,8 +165,8 @@
                 //Vimerito::redirect(501, array('failure' => '10'), array('VFailureController'));
             }
 
-            if(file_exists(self::getApplicationPath()."/configuration/javaScriptLibraries.conf.php")){
-                require self::getApplicationPath()."/configuration/javaScriptLibraries.conf.php";
+            if(file_exists(self::getApplicationPath(true)."/configuration/javaScriptLibraries.conf.php")){
+                require self::getApplicationPath(true)."/configuration/javaScriptLibraries.conf.php";
                 self::$userJavaScriptLibraries = $__cachedJsLibraries;
             }else{
             	throw new Exception('Configurationfile "classArray.php"', 0);
@@ -191,8 +192,7 @@
 
             	self::$__application[self::$__calledController]['obj'] = new self::$__calledModul;
             	self::$__modulPath = self::$__application[self::$__calledController]['obj']->getModulPath();
-            	self::$__application[self::$__calledController]['obj']->run(self::$__calledController, self::$__calledMethod);
-            	
+            	self::$__application[self::$__calledController]['obj']->run(self::$__calledController, self::$__calledMethod);           		
             }else{
                 self::$__calledController = VRouter::calledController();
                 self::$__calledMethod = VRouter::calledMethod();
@@ -347,7 +347,7 @@
         */ 
         public static function registerAutoloader($autoloader){
             spl_autoload_unregister(array('Vimerito','autoload'));
-            spl_autoload_unregister($autoloader);
+            spl_autoload_register($autoloader);
             spl_autoload_register(array('Vimerito','autoload'));
         }
         
@@ -536,12 +536,25 @@
             }        
         }
         
-        public static function getApplicationPath(){
-	    	if(self::$__applicationPath != '' or self::$__applicationPath != Null){
-	            return str_replace(str_replace(__Basedir, "", __ApplicationPath), "", __ApplicationPath).self::$__applicationPath;
-	       	}else{
-	            return str_replace(__Basedir, "", __ApplicationPath);
-	        }      
+        public static function setDevelopmentApplicationPath(){
+        	self::$__currentApplication = '_development';
+        	self::$__applicationPath = '_development/';	
+        }
+        
+        public static function getApplicationPath($ignoreDevelopmentRequest = false){
+        	if(VRequest::calledRequestType() != DevelopmentRequest OR $ignoreDevelopmentRequest == true){
+		    	if(VRequest::calledRequestType() == DevelopmentRequest){
+		    		return str_replace(__Basedir, "", __ApplicationPath);
+		    	}else{
+	        		if(self::$__applicationPath != '' or self::$__applicationPath != Null){
+			            return str_replace(str_replace(__Basedir, "", __ApplicationPath), "", __ApplicationPath).self::$__applicationPath;
+			       	}else{
+			            return str_replace(__Basedir, "", __ApplicationPath);
+			        }   
+		    	}
+        	}else{
+        		return str_replace(__Basedir, "", __SystemPath).self::$__applicationPath;
+        	}   
         }
         
         public static function getApplicationName(){

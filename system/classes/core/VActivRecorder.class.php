@@ -14,11 +14,12 @@
     *   queries.
     *
     */
-    class VActivRecorder extends VDatabase{
+    class VActivRecorder{
         public $_classname;
         private $_cells = array();
         private $_cellsType = array();
         private $_cellsPrimaryKey = Null;  
+        private $_databaseController;
         protected $_databaseConfiguration = array();    
         public $resultCount;  
     
@@ -26,11 +27,6 @@
         *   @param  $analyse    BOOL    On true the databasetable automaticly analysed
         */ 
         public function __construct($analyse = true){
-            parent::__construct(); 
-            $this->_classname = str_replace("Model", "", get_class($this)); 
-            if($analyse == true){ //automatically analysing database 
-                $this->analyseDatabase();
-            }
         }  
         /** The destructor. Calls the parent-destructor.
         */ 
@@ -48,6 +44,10 @@
             }else{
                 return Null;    
             }    
+        }
+        
+        public function setDatabaseController($databaseController){
+        	$this->_databaseController = $databaseController;
         }
         /** Set the current result to the first result of the recordset.
         *   @return BOOL If the method fails it return false. Otherwise true.
@@ -150,7 +150,7 @@
                     'WHERE'     => array($this->_cellsPrimaryKey, $value, '=')  
                 )
             );
-            $_return = $this->sendQuery($sql);
+            $_return = $this->_databaseController->sendQuery($sql);
             $this->first();
             return $_return;
         } 
@@ -176,7 +176,7 @@
                 )
             );
             
-            $_return = $this->sendQuery($sql);  
+            $_return = $this->_databaseController->sendQuery($sql);  
             $this->first();
             return $_return;          
         }
@@ -193,7 +193,7 @@
                     'ORDER'     => $order
                 )
             );
-            $_return = $this->sendQuery($sql);
+            $_return = $this->_databaseController->sendQuery($sql);
             $this->first();
             return $_return;
         }
@@ -221,7 +221,7 @@
                     'LIMIT'     => $limit
                 )
             );
-            $_return = $this->sendQuery($sql);
+            $_return = $this->_databaseController->sendQuery($sql);
             $this->first();
             return $_return;            
         }
@@ -245,7 +245,7 @@
                     'WHERE'     => $condition
                 )
             );
-            return $this->sendQuery($sql);
+            return $this->_databaseController->sendQuery($sql);
         }
         /** Updates datasets filtered by the primary key.
         *   @param  $PKvalue    The value of the primary key. 
@@ -261,7 +261,7 @@
                     'WHERE'     => array(array($this->_cellsPrimaryKey, $PKvalue, '='))
                 )
             );
-            return $this->sendQuery($sql);
+            return $this->_databaseController->sendQuery($sql);
         } 
         /** Updates datasets filtered by a condition with data, that stored in the model.
         *   @param  $condition  (optional)
@@ -287,7 +287,7 @@
                     'WHERE'     => $c
                 )
             );
-            return $this->sendQuery($sql);            
+            return $this->_databaseController->sendQuery($sql);            
         }
         /** Insert a dataset with data, that stored in the model.
         *   @return Mysql-Result
@@ -301,7 +301,7 @@
                 )
             );
             echo $sql;
-            return $this->sendQuery($sql);            
+            return $this->_databaseController->sendQuery($sql);            
         }
         /** Insert a dataset with data, that stored in the formmodel.
         *   @param  $Form   Is an instance of a formmodel.
@@ -331,7 +331,7 @@
                             'VALUES'    =>  $_valuesArray
                             )
                         );
-                return $this->sendQuery($sql);          
+                return $this->_databaseController->sendQuery($sql);          
             }else{
                 return false;
             }
@@ -348,7 +348,7 @@
                     "WHERE"     =>  $condition
                 )
             );
-            return $this->sendQuery($sql);
+            return $this->_databaseController->sendQuery($sql);
         }
         /** Update a dataset with the values of a from.
         *   @param $Form is a pointer to a formmodel
@@ -372,7 +372,7 @@
                             'WHERE'     =>  $where
                             )
                         );
-                return $this->sendQuery($sql);
+                return $this->_databaseController->sendQuery($sql);
             }else{
                 return false;
             }
@@ -384,7 +384,7 @@
         * @version 0.6
         */ 
         public function send($sql, $addToRecordset = 1){
-            $r = $this->sendQuery($sql, $addToRecordset);
+            $r = $this->_databaseController->sendQuery($sql, $addToRecordset);
             $this->first();
             return $r;
         }
@@ -413,25 +413,7 @@
             $__a[] = $this->__recordset;
             return json_encode($__a, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
         }
-
-        /**
-         * Jumps to the position in the recordset, where a cell has the given value.
-         * @param  string $cell The refernce-cell
-         * @param  string $value The search-value.
-         * @version 0.6.1
-         */
-        public function findInRecordset($cell, $value){
-        	$this->first();
-        	for($_i = 0; $_i < $this->resultCount; $_i++){
-        		if($this->$cell == $value){
-        			return $_i;
-        		}
-        		if($this->$cell != $value AND $this->isLast()){
-        			return Null;
-        		}
-        		$this->next();
-        	}
-        }
+        
         /**
          * Renders the JSON-object.
          * @return
